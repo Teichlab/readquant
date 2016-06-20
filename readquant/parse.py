@@ -67,14 +67,17 @@ def read_salmon(sample_path, isoforms=False, version='0.6.0'):
     return df['TPM']
 
 
-def read_cufflinks(sample_path):
+def read_cufflinks(sample_path, isoforms=False):
     ''' Function for reading a Cufflinks quantification result.
 
     Returns
     -------
     A pandas.Series with the expression values in the sample.
     '''
-    quant_file = sample_path + '/genes.fpkm_tracking'
+    if isoforms:
+        quant_file = sample_path + '/isoforms.fpkm_tracking'
+    else:
+        quant_file = sample_path + '/genes.fpkm_tracking'
     df = pd.read_table(quant_file, engine='c',
                                    usecols=['tracking_id', 'FPKM'],
                                    index_col=0,
