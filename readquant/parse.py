@@ -176,6 +176,36 @@ def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.6.0'):
     return qc_data
 
 
+def read_tophat_qc(sample_path):
+    ''' Parse technical quality control data from TopHat alignment results.
+
+    Parameters
+    ----------
+    sample_path, str
+        The path to the resulting TopHat directory.
+
+    Returns
+    -------
+    A pandas.Series with technical information from the TopHat alignment results
+    for the sample.
+    '''
+    with open(sample_path + '/align_summary.txt') as fh:
+        for l in fh:
+            if 'Input' in l:
+                n_reads = int(l.split()[-1])
+                break
+
+        for l in fh:
+            if 'overall' in l:
+                pct_mapped = float(l.split('%')[0])
+                break
+
+    qc_data = pd.Series({'input_reads': n_reads,
+                         'pct_mapped': pct_mapped})
+
+    return qc_data
+
+
 def read_qcs(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
     ''' Read technical quality control data results from every directory
     matching the glob in pattern.
@@ -197,7 +227,8 @@ def read_qcs(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
     '''
     sample_readers = {
         'salmon': read_salmon_qc,
-        'sailfish': read_salmon_qc
+        'sailfish': read_salmon_qc,
+        'tophat': read_tophat_qc
     }
 
     qc_reader = sample_readers[tool]
