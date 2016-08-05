@@ -1,5 +1,7 @@
+from __future__ import print_function
 from glob import iglob
 
+import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -61,10 +63,14 @@ def read_salmon(sample_path, isoforms=False, version='0.6.0'):
         }
     }
 
-    df = pd.read_table(quant_file, **read_kwargs[version])
+    if not os.path.isfile(quant_file):
+        print("WARNING: Could not find file: %s" % quant_file)
+        return
+    else:
+        df = pd.read_table(quant_file, **read_kwargs[version])
 
-    df = df.rename(columns={'Name': 'target_id'})
-    return df['TPM']
+        df = df.rename(columns={'Name': 'target_id'})
+        return df['TPM']
 
 
 def read_cufflinks(sample_path, isoforms=False):
@@ -122,7 +128,8 @@ def read_quants(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
     quants = pd.DataFrame()
     for sample_path in tqdm(iglob(pattern)):
         sample_quant = quant_reader(sample_path, **kwargs)
-        quants[sample_path] = sample_quant
+        if sample_quant:
+            quants[sample_path] = sample_quant
 
     return quants
 
