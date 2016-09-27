@@ -149,9 +149,19 @@ def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.6.0'):
     A pandas.Series with technical information from the Salmon results for
     the sample.
     '''
-    flen_dist = np.fromfile(sample_path + '/libParams/flenDist.txt', sep='\t')
-    global_fl_mode = flen_dist.argmax()
-    robust_fl_mode = flen_dist[flen_lim[0]:-flen_lim[1]].argmax() + flen_lim[0]
+    try:
+        flen_dist = np.fromfile(sample_path + '/libParams/flenDist.txt', sep='\t')
+        global_fl_mode = flen_dist.argmax()
+        robust_fl_mode = flen_dist[flen_lim[0]:-flen_lim[1]].argmax() + flen_lim[0]
+    except FileNotFoundError:
+        global_fl_mode = 0
+        robust_fl_mode = 0
+
+    if version == '0.7.2':
+        qc_data = pd.read_json(sample_path + '/aux_info/meta_info.json', typ='series')
+        qc_data = qc_data[['num_processed', 'num_mapped', 'percent_mapped']]
+        qc_data['global_fl_mode'] = global_fl_mode
+        qc_data['robust_fl_mode'] = robust_fl_mode
 
     if version == '0.6.0':
         qc_data = pd.read_json(sample_path + '/aux/meta_info.json', typ='series')
