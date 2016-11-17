@@ -21,7 +21,7 @@ def read_kallisto(sample_path):
     return df['TPM']
 
 
-def read_salmon(sample_path, isoforms=False, version='0.6.0'):
+def read_salmon(sample_path, isoforms=False, version='0.7.2'):
     ''' Function for reading a Salmon quantification result.
 
     Parameters
@@ -29,9 +29,9 @@ def read_salmon(sample_path, isoforms=False, version='0.6.0'):
     isoforms : bool, default False
         Whether to parse isoform level expression or gene level expression.
 
-    version : str, default '0.6.0'
+    version : str, default '0.7.2'
         The version of Salmon which generated the directory. Currently
-        supports '0.6.0' and '0.4.0'. (Other versions might be compatible
+        supports '0.7.2', '0.6.0' and '0.4.0'. (Other versions might be compatible
         with these.)
 
     Returns
@@ -44,6 +44,12 @@ def read_salmon(sample_path, isoforms=False, version='0.6.0'):
         quant_file = sample_path + '/quant.genes.sf'
 
     read_kwargs = {
+        '0.7.2': {
+            'engine': 'c',
+            'usecols': ['Name', 'TPM'],
+            'index_col': 0,
+            'dtype': {'Name': np.str, 'TPM': np.float64}
+        },
         '0.6.0': {
             'engine': 'c',
             'usecols': ['Name', 'TPM'],
@@ -127,7 +133,7 @@ def read_quants(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
     return quants
 
 
-def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.6.0'):
+def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.7.2'):
     ''' Parse technical quality control data from a Salmon quantification
     result.
 
