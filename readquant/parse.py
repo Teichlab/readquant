@@ -254,7 +254,13 @@ def read_qcs(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
 
     QCs = pd.DataFrame()
     for sample_path in tqdm(iglob(pattern)):
-        sample_qc = qc_reader(sample_path, **kwargs)
+        try:
+            sample_qc = qc_reader(sample_path, **kwargs)
+
+        except ValueError:
+            print('Error parsing {}'.format(sample_path))
+            raise
+
         QCs[sample_path] = sample_qc
 
     return QCs.T
