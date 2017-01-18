@@ -6,11 +6,13 @@ def readme():
 
 setup(
         name='readquant',
-        version='1.0.0',
+        version='1.1.0',
         description='Convenience package for parsing RNA-seq quantification results',
         long_description=readme(),
         packages=find_packages(),
         install_requires=['pandas', 'tqdm'],
+        scripts=['scripts/gather_tech_qc.py',
+                 'scripts/gather_bio_qc.py'],
         author='Valentine Svensson',
         author_email='valentine@nxn.se',
         license='MIT'
