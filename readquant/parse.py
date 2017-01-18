@@ -23,7 +23,7 @@ def read_kallisto(sample_path):
     return df['TPM']
 
 
-def read_salmon(sample_path, isoforms=False, version='0.6.0'):
+def read_salmon(sample_path, isoforms=False, version='0.7.2'):
     ''' Function for reading a Salmon quantification result.
 
     Parameters
@@ -31,9 +31,9 @@ def read_salmon(sample_path, isoforms=False, version='0.6.0'):
     isoforms : bool, default False
         Whether to parse isoform level expression or gene level expression.
 
-    version : str, default '0.6.0'
+    version : str, default '0.7.2'
         The version of Salmon which generated the directory. Currently
-        supports '0.6.0' and '0.4.0'. (Other versions might be compatible
+        supports '0.7.2', '0.6.0' and '0.4.0'. (Other versions might be compatible
         with these.)
 
     Returns
@@ -46,6 +46,12 @@ def read_salmon(sample_path, isoforms=False, version='0.6.0'):
         quant_file = sample_path + '/quant.genes.sf'
 
     read_kwargs = {
+        '0.7.2': {
+            'engine': 'c',
+            'usecols': ['Name', 'TPM'],
+            'index_col': 0,
+            'dtype': {'Name': np.str, 'TPM': np.float64}
+        },
         '0.6.0': {
             'engine': 'c',
             'usecols': ['Name', 'TPM'],
@@ -134,7 +140,7 @@ def read_quants(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
     return quants
 
 
-def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.6.0'):
+def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.7.2'):
     ''' Parse technical quality control data from a Salmon quantification
     result.
 
@@ -156,9 +162,19 @@ def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.6.0'):
     A pandas.Series with technical information from the Salmon results for
     the sample.
     '''
-    flen_dist = np.fromfile(sample_path + '/libParams/flenDist.txt', sep='\t')
-    global_fl_mode = flen_dist.argmax()
-    robust_fl_mode = flen_dist[flen_lim[0]:-flen_lim[1]].argmax() + flen_lim[0]
+    try:
+        flen_dist = np.fromfile(sample_path + '/libParams/flenDist.txt', sep='\t')
+        global_fl_mode = flen_dist.argmax()
+        robust_fl_mode = flen_dist[flen_lim[0]:-flen_lim[1]].argmax() + flen_lim[0]
+    except FileNotFoundError:
+        global_fl_mode = 0
+        robust_fl_mode = 0
+
+    if version == '0.7.2':
+        qc_data = pd.read_json(sample_path + '/aux_info/meta_info.json', typ='series')
+        qc_data = qc_data[['num_processed', 'num_mapped', 'percent_mapped']]
+        qc_data['global_fl_mode'] = global_fl_mode
+        qc_data['robust_fl_mode'] = robust_fl_mode
 
     if version == '0.6.0':
         qc_data = pd.read_json(sample_path + '/aux/meta_info.json', typ='series')
@@ -245,7 +261,13 @@ def read_qcs(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
 
     QCs = pd.DataFrame()
     for sample_path in tqdm(iglob(pattern)):
-        sample_qc = qc_reader(sample_path, **kwargs)
+        try:
+            sample_qc = qc_reader(sample_path, **kwargs)
+
+        except ValueError:
+            print('Error parsing {}'.format(sample_path))
+            raise
+
         QCs[sample_path] = sample_qc
 
     return QCs.T
