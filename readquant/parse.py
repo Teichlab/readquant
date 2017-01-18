@@ -69,12 +69,13 @@ def read_salmon(sample_path, isoforms=False, version='0.7.2'):
         }
     }
 
+    print('version', version)
+
     if not os.path.isfile(quant_file):
         print("WARNING: Could not find file: %s" % quant_file)
         return
     else:
         df = pd.read_table(quant_file, **read_kwargs[version])
-
         df = df.rename(columns={'Name': 'target_id'})
         return df['TPM']
 

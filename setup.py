@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 
+
 def readme():
     with open('README.md') as f:
         return f.read()
@@ -10,7 +11,10 @@ setup(
         description='Convenience package for parsing RNA-seq quantification results',
         long_description=readme(),
         packages=find_packages(),
-        install_requires=['pandas', 'tqdm'],
+        install_requires=['pandas', 'tqdm', 'click'],
+        entry_points={'console_scripts': [
+            'readquant = readquant.__main__:cli'
+        ]},
         author='Valentine Svensson',
         author_email='valentine@nxn.se',
         license='MIT'
