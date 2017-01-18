@@ -1,5 +1,6 @@
-import readquant
 import click
+
+import readquant
 
 
 @click.command()
