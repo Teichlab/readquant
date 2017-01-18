@@ -6,13 +6,9 @@ import pandas as pd
 import click
 from sklearn.linear_model import LogisticRegression
 import numpy as np
-from biomart import BiomartServer
 
 import readquant
-
-print('Connecting to biomart...')
-SERVER = BiomartServer( "http://www.ensembl.org/biomart")
-ENSEMBL = SERVER.datasets['hsapiens_gene_ensembl']
+from readquant.utils import BioMartQuery
 
 
 def get_ERCC():
@@ -20,33 +16,19 @@ def get_ERCC():
 
 
 def get_MT():
-    print('Get MT genes from biomart...')
-    r = ENSEMBL.search({
-        'filters': {
-            'chromosome_name': 'MT'
-        },
-        'attributes': [
-            'ensembl_gene_id'
-        ]
-    })
-
-    idx = pd.Index(r.text.split())
+    ENSEMBL = BioMartQuery("hsapiens_gene_ensembl")
+    ENSEMBL.add_filters(chromosome_name="MT")
+    ENSEMBL.add_attributes("ensembl_gene_id")
+    idx = pd.Index(ENSEMBL.stream()['ensembl_gene_id'])
 
     return idx
 
 
 def get_rRNA():
-    print('Get rRNA genes from biomart...')
-    r = ENSEMBL.search({
-        'filters': {
-            'biotype': 'rRNA'
-        },
-        'attributes': [
-            'ensembl_gene_id'
-        ]
-    })
-
-    idx = pd.Index(r.text.split())
+    ENSEMBL = BioMartQuery("hsapiens_gene_ensembl")
+    ENSEMBL.add_filters(biotype="rRNA")
+    ENSEMBL.add_attributes("ensembl_gene_id")
+    idx = pd.Index(ENSEMBL.stream()['ensembl_gene_id'])
 
     return idx
 
