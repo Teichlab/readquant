@@ -69,8 +69,6 @@ def read_salmon(sample_path, isoforms=False, version='0.7.2'):
         }
     }
 
-    print('version', version)
-
     if not os.path.isfile(quant_file):
         print("WARNING: Could not find file: %s" % quant_file)
         return
