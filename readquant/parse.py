@@ -140,6 +140,31 @@ def read_quants(pattern='salmon/*_salmon_out', tool='salmon', **kwargs):
     return quants
 
 
+def read_salmon_3p_bias(pattern='salmon/*_salmon_out/'):
+    ''' Read a smoothed representation of 3p bias for each sample.
+    '''
+    from .utils import PosModel
+    p = PosModel()
+
+    from sklearn import gaussian_process
+    kernel = gaussian_process.kernels.RBF(50., (50., 50.))
+    gpr = gaussian_process.GaussianProcessRegressor(kernel=kernel, normalize_y=False)
+    
+    xx = np.linspace(0, 100, 20)[:, None]
+    xxx = np.linspace(0, 100, 100)[:, None]
+
+    pattern += 'aux_info/obs3_pos.gz'
+
+    sample_3p_bias = pd.DataFrame()
+    for f in tqdm(iglob(pattern)):
+        p.from_file(f)
+        yy = pd.DataFrame(p.models).iloc[:, 2]
+        yyy = gpr.fit(xx, yy).predict(xxx)
+        sample_3p_bias[f.replace('aux_info/obs3_pos.gz', '')] = yyy
+
+    return sample_3p_bias
+
+
 def read_salmon_qc(sample_path, flen_lim=(100, 100), version='0.7.2'):
     ''' Parse technical quality control data from a Salmon quantification
     result.

@@ -1,5 +1,10 @@
 from __future__ import print_function
 
+import sys
+import struct
+import gzip
+
+
 import pandas as pd
 import click
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -9,6 +14,40 @@ import pycurl
 from urllib.parse import urlencode
 from urllib.parse import quote_plus
 from io import BytesIO
+
+
+class PosModel:
+    ''' Helper class for parsing positional bias parameters from Salmon.
+    '''
+    def __init__(self):
+        self.models = {}
+
+    def from_file(self, fn):
+        f = gzip.open(fn)
+        b = f.read()
+
+        offset = 0
+        uint_size = struct.calcsize('I')
+        double_size = struct.calcsize('d')
+
+        num_models = struct.unpack_from('I', b[offset:])[0]
+        offset += uint_size
+
+        length_bins = []
+        for i in range(0, num_models):
+            length_bins.append(struct.unpack_from('I', b[offset:])[0])
+            offset += uint_size
+
+        models = []
+        for i in range(0, num_models):
+            model_bins = struct.unpack_from('I', b[offset:])[0]
+            offset += uint_size
+            model = list(struct.unpack_from('d'*model_bins, b[offset:]))
+            offset += model_bins * double_size
+            models.append(model)
+        f.close()
+        self.models = dict(zip(length_bins, models))
+
 
 
 class BioMartQuery(object):
