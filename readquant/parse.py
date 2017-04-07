@@ -23,7 +23,7 @@ def read_kallisto(sample_path):
     return df['TPM']
 
 
-def read_salmon(sample_path, isoforms=False, version='0.7.2'):
+def read_salmon(sample_path, isoforms=False, version='0.7.2', unit='TPM'):
     ''' Function for reading a Salmon quantification result.
 
     Parameters
@@ -48,9 +48,9 @@ def read_salmon(sample_path, isoforms=False, version='0.7.2'):
     read_kwargs = {
         '0.7.2': {
             'engine': 'c',
-            'usecols': ['Name', 'TPM'],
+            'usecols': ['Name', unit],
             'index_col': 0,
-            'dtype': {'Name': np.str, 'TPM': np.float64}
+            'dtype': {'Name': np.str, unit: np.float64}
         },
         '0.6.0': {
             'engine': 'c',
@@ -76,7 +76,7 @@ def read_salmon(sample_path, isoforms=False, version='0.7.2'):
         df = pd.read_table(quant_file, **read_kwargs[version])
 
         df = df.rename(columns={'Name': 'target_id'})
-        return df['TPM']
+        return df[unit]
 
 
 def read_cufflinks(sample_path, isoforms=False):
