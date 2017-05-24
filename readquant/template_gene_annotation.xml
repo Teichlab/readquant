@@ -9,5 +9,6 @@
 		<Attribute name = "gene_biotype" />
 		<Attribute name = "start_position" />
 		<Attribute name = "chromosome_name" />
+		<Attribute name = "description" />
 	</Dataset>
 </Query>

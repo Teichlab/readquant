@@ -1,3 +1,4 @@
+from glob import glob
 from setuptools import setup, find_packages
 
 def readme():
@@ -11,8 +12,7 @@ setup(
         long_description=readme(),
         packages=find_packages(),
         install_requires=['pandas', 'tqdm'],
-        scripts=['scripts/gather_tech_qc.py',
-                 'scripts/gather_bio_qc.py'],
+        scripts=glob('scripts/*.py'),
         author='Valentine Svensson',
         author_email='valentine@nxn.se',
         license='MIT'
