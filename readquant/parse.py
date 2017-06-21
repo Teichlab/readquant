@@ -54,9 +54,9 @@ def read_salmon(sample_path, isoforms=False, version='0.7.2', unit='TPM'):
         },
         '0.6.0': {
             'engine': 'c',
-            'usecols': ['Name', 'TPM'],
+            'usecols': ['Name', unit],
             'index_col': 0,
-            'dtype': {'Name': np.str, 'TPM': np.float64}
+            'dtype': {'Name': np.str, unit: np.float64}
         },
         '0.4.0': {
             'engine': 'c',
