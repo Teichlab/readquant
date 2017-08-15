@@ -7,7 +7,7 @@ def readme():
 
 setup(
         name='readquant',
-        version='1.1.0',
+	version='1.2.0',
         description='Convenience package for parsing RNA-seq quantification results',
         long_description=readme(),
         packages=find_packages(),
